@@ -1,0 +1,21 @@
+{
+  "name": "wordpress-gulp-jade-stylus",
+  "version": "1.0.0",
+  "description": "A skeleton app for Wordpress with Jade + Stylus support",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenjaminN/wordpress-gulp-jade-stylus.git"
+  },
+  "author": "Benjamin Netter <benjamin.netter@gmail.com> (http://twitter.com/benjaminnetter)",
+  "bugs": {
+    "url": "https://github.com/BenjaminN/wordpress-gulp-jade-stylus/issues"
+  },
+  "homepage": "https://github.com/BenjaminN/wordpress-gulp-jade-stylus",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-clean": "^0.3.1",
+    "gulp-download": "0.0.1",
+    "gulp-jade-php": "^1.1.0",
+    "gulp-unzip": "^0.1.3"
+  }
+}
