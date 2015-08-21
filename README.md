@@ -9,4 +9,4 @@ A sandbox for Wordpress theme development, using Jade + Stylus.
 + Copy `themes/default-skeleton` into `themes/your-theme`
 + Edit `themes/your-theme/config.json` file as you wish (view more on the [Wordpress Codex](https://codex.wordpress.org/File_Header))
 + Edit your theme name in the `config.json` root file
-+ You're good to go ! Run `gulp` once again to get started
++ You're good to go ! Run `gulp` once again and go to `http://localhost:8080` to get started
