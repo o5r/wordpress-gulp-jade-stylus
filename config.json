@@ -1,3 +1,6 @@
 {
-  "theme": "default-skeleton"
+  "theme": "default-skeleton",
+  "server": {
+    "proxy": "local.wordpress.com"
+  }
 }

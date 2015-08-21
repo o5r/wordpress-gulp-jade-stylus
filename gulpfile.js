@@ -36,13 +36,12 @@ var utils = require('./utils');
  * 3°) the arguments
  */
 
-var config = _.extend({
+var config = _.merge({
   latestWordpressURL: 'https://wordpress.org/latest.zip',
   production: false,
   locals: {},
   server: {
     logPrefix: 'Server',
-    proxy: 'local.wordpress.com',
     port: 8080,
     open: false,
     notify: false
@@ -208,6 +207,7 @@ gulp.task('watch', function() {
  */
 
 gulp.task('live-reload', function() {
+  console.log(config.server);
   return server.init(config.server);
 });
 
@@ -230,7 +230,7 @@ gulp.task('clean', function(callback) {
 gulp.task('default', ['compile'], function() {
   if (!config.production) {
     gulp.start('watch');
-    if (!!config.server) {
+    if (!!config.server && !_.isUndefined(config.server.proxy)) {
       gulp.start('live-reload');
     }
   }
