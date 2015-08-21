@@ -3,30 +3,28 @@
  *
  * TODO:
  * + Install Wordpress only if it hasn't been installed yet
- * + Compile style.css using config.json + utils.parseConfigFile
- * + Compile templates + js + css into theme root path (not subdirectories)
- * + Uglify JS if compiling for production
- * + Put paths into a global config object
  * + Add an images folder and compress before copying using gulp-imagemin
  */
 
-var gulp = require('gulp');
 var fs = require('fs');
 var _ = require('lodash');
+var server = require('browser-sync').create();
 
+var gulp = require('gulp');
 var download = require('gulp-download');
 var unzip = require('gulp-unzip');
-var clean = require('gulp-clean');
 var jade = require('gulp-jade-php');
 var concat = require('gulp-concat');
 var wrap = require('gulp-wrap');
 var gulpif = require('gulp-if');
-var nib = require('nib');
 var stylus = require('gulp-stylus');
 var uglify = require('gulp-uglify');
 var order = require('gulp-order');
-var debug = require('gulp-debug');
+var plumber = require('gulp-plumber');
 var minifyCSS = require('gulp-minify-css');
+
+var nib = require('nib');
+var del = require('del');
 
 var hasFile = fs.existsSync;
 var utils = require('./utils');
@@ -40,7 +38,15 @@ var utils = require('./utils');
 
 var config = _.extend({
   latestWordpressURL: 'https://wordpress.org/latest.zip',
-  production: false
+  production: false,
+  locals: {},
+  server: {
+    logPrefix: 'Server',
+    proxy: 'local.wordpress.com',
+    port: 8080,
+    open: false,
+    notify: false
+  }
 }, require('./config.json'), require('yargs').argv);
 
 
@@ -58,49 +64,57 @@ var paths = {
 };
 
 paths.misc = [
-  '!' + paths.root + '/{templates,javascripts,stylesheets}/**',
+  '!' + paths.root + '/{templates,javascripts,stylesheets}/**/*',
   '!' + paths.root + '/{templates,javascripts,stylesheets,config.json}',
-  paths.root + '/**'
+  paths.root + '/**/*'
 ];
+
+/**
+ * Creates the `public` folder from unzipping the latest Wordpress release
+ */
 
 gulp.task('install', ['download', 'unzip', 'rename', 'delete']);
 
-gulp.task('download', function() {
-  var url = config.latestWordpressURL;
-
-  return download(url).pipe(gulp.dest(__dirname + '/tmp'));
+gulp.task('next', ['download'], function() {
+  console.log('nexto');
 });
+
+/**
+ * Downloads the latest Wordpress release
+ */
+
+gulp.task('download', function() {
+  return download(config.latestWordpressURL).pipe(gulp.dest(__dirname + '/tmp'));
+});
+
+/**
+ * Unzips the latest release to the current directory
+ */
 
 gulp.task('unzip', ['download'], function() {
-  return gulp.src(__dirname + '/tmp/latest.zip').pipe(unzip()).pipe(gulp.dest(__dirname));
+  return gulp.src(__dirname + '/tmp/latest.zip')
+             .pipe(unzip())
+             .pipe(gulp.dest(__dirname));
 });
+
+/**
+ * Copies all the files in the `wordpress` folder to a `public` folder
+ */
 
 gulp.task('rename', ['unzip'], function() {
-  return gulp.src(__dirname + '/wordpress/**/*').pipe(gulp.dest(__dirname + '/public'));
+  return gulp.src(__dirname + '/wordpress/**/*')
+             .pipe(gulp.dest(__dirname + '/public'));
 });
 
-gulp.task('delete', ['rename'], function() {
-  return gulp.src([__dirname + '/wordpress', __dirname + '/tmp']).pipe(clean());
-});
+/**
+ * Deletes the previously created `wordpress` folder
+ */
 
-gulp.task('clean', function() {
-  return gulp.src([
-    __dirname + '/public',
+gulp.task('delete', ['rename'], function(callback) {
+  return del([
     __dirname + '/wordpress',
     __dirname + '/tmp'
-  ]).pipe(clean());
-});
-
-gulp.task('installIfNecessary', function(callback) {
-  var alreadyInstalled = hasFile(__dirname + '/public');
-
-  if (!alreadyInstalled) {
-    return gulp.start('install', function() {
-      console.log('done installing');
-    });
-  } else {
-    return callback();
-  }
+  ], callback);
 });
 
 /**
@@ -112,10 +126,12 @@ gulp.task('compileJavascripts', function() {
   var fileName = 'core.js';
 
   return gulp.src(paths.javascripts)
+             .pipe(plumber())
              .pipe(order([ 'jquery.js' ]))
              .pipe(concat(fileName))
              .pipe(gulpif(config.production, uglify({compress: false})))
-             .pipe(gulp.dest(paths.destination));
+             .pipe(gulp.dest(paths.destination))
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 /**
@@ -133,10 +149,12 @@ gulp.task('compileStylesheets', function() {
   }
 
   return gulp.src(paths.stylesheets + '/style.styl')
+             .pipe(plumber())
              .pipe(stylus({ use: [nib()] }))
              .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulpif(config.production, minifyCSS()))
-             .pipe(gulp.dest(paths.destination));
+             .pipe(gulp.dest(paths.destination))
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 /**
@@ -145,8 +163,10 @@ gulp.task('compileStylesheets', function() {
 
 gulp.task('compileTemplates', function() {
   return gulp.src(paths.templates)
+             .pipe(plumber())
              .pipe(jade({ locals: config.locals }))
-             .pipe(gulp.dest(paths.destination));
+             .pipe(gulp.dest(paths.destination))
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 /**
@@ -163,17 +183,44 @@ gulp.task('compileMisc', function() {
  * Compiles all the assets
  */
 
-gulp.task('compile', ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileMisc']);
+gulp.task('compile', function() {
+  var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileMisc'];
+
+  if (!hasFile(__dirname + '/public')) {
+    tasks.unshift('install');
+  }
+
+  return gulp.start(tasks);
+});
 
 /**
  * Watch all the assets
  */
 
 gulp.task('watch', function() {
-  gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], ['compileStylesheets'])
+  gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], ['compileStylesheets']);
   gulp.watch([paths.templates], ['compileTemplates']);
-  gulp.watch([paths.misc], ['compileMisc']);
   gulp.watch([paths.javascripts], ['compileJavascripts']);
+});
+
+/**
+ * Starts the live-reloaded web server
+ */
+
+gulp.task('live-reload', function() {
+  return server.init(config.server);
+});
+
+/**
+ * Cleans everything by deleting newly created folders
+ */
+
+gulp.task('clean', function(callback) {
+  return del([
+    __dirname + '/public',
+    __dirname + '/wordpress',
+    __dirname + '/tmp'
+  ], callback);
 });
 
 /**
@@ -182,7 +229,9 @@ gulp.task('watch', function() {
 
 gulp.task('default', ['compile'], function() {
   if (!config.production) {
-    gulp.start('startLiveReload');
     gulp.start('watch');
+    if (!!config.server) {
+      gulp.start('live-reload');
+    }
   }
 });

@@ -6,27 +6,29 @@
     "type": "git",
     "url": "https://github.com/BenjaminN/wordpress-gulp-jade-stylus.git"
   },
+  "license": "MIT",
   "author": "Benjamin Netter <benjamin.netter@gmail.com> (http://twitter.com/benjaminnetter)",
   "bugs": {
     "url": "https://github.com/BenjaminN/wordpress-gulp-jade-stylus/issues"
   },
   "homepage": "https://github.com/BenjaminN/wordpress-gulp-jade-stylus",
-  "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-clean": "^0.3.1",
-    "gulp-concat": "2.4.3",
-    "gulp-debug": "^2.0.1",
-    "gulp-download": "0.0.1",
-    "gulp-jade-php": "^1.1.0",
-    "gulp-unzip": "^0.1.3"
-  },
   "dependencies": {
-    "browser-sync": "2.2.0",
-    "gulp-debug": "^2.1.0",
-    "gulp-jade-php": "^1.1.0",
-    "gulp-stylus": "^2.0.6",
-    "gulp-uglify": "^1.2.0",
-    "lodash": "3.10.0",
-    "nib": "^1.1.0"
+    "browser-sync": "^2.8.2",
+    "del": "^1.2.1",
+    "gulp": "3.9.0",
+    "gulp-concat": "2.6.0",
+    "gulp-download": "0.0.1",
+    "gulp-if": "1.2.5",
+    "gulp-jade-php": "1.1.0",
+    "gulp-minify-css": "1.2.0",
+    "gulp-order": "1.1.1",
+    "gulp-plumber": "^1.0.1",
+    "gulp-stylus": "2.0.6",
+    "gulp-uglify": "1.2.0",
+    "gulp-unzip": "0.1.3",
+    "gulp-wrap": "0.11.0",
+    "lodash": "3.10.1",
+    "nib": "1.1.0",
+    "yargs": "3.20.0"
   }
 }
