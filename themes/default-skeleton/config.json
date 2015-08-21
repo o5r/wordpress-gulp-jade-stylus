@@ -1,0 +1,12 @@
+{
+  "theme-name": "Default Skeleton",
+  "theme-uri": "",
+  "author": "Benjamin Netter",
+  "author-uri": "https://twitter.com/benjaminnetter/",
+  "description": "This is a basic example of a skeleton theme that you can use to create your own theme.",
+  "version": "1.0",
+  "license": "GNU General Public License v2 or later",
+  "license-uri": "http://www.gnu.org/licenses/gpl-2.0.html",
+  "tags": [],
+  "comment": ""
+}

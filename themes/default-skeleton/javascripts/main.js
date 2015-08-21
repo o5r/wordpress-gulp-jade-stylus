@@ -1,0 +1,3 @@
+/**
+ * The main javascript file
+ */
