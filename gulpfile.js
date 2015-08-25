@@ -8,7 +8,6 @@
 
 var fs = require('fs');
 var _ = require('lodash');
-var server = false;
 
 var gulp = require('gulp');
 var download = require('gulp-download');
@@ -48,6 +47,20 @@ var config = _.merge({
   }
 }, require('./config.json'), require('yargs').argv);
 
+/**
+ * Configuring browser-sync
+ * This is obviously ugly because we don't install browser-sync in production
+ */
+
+if (config.production) {
+  var server = {
+    stream: function() {
+      return true;
+    }
+  };
+} else {
+  var server = require('browser-sync').create();
+}
 
 /**
  * The assets paths
@@ -67,16 +80,6 @@ paths.misc = [
   '!' + paths.root + '/{templates,javascripts,stylesheets,config.json}',
   paths.root + '/**/*'
 ];
-
-/**
- * Inject the new files to browser-sync
- */
-
-var inject = function() {
-  if (server) {
-    return server.stream();
-  }
-};
 
 /**
  * Creates the `public` folder from unzipping the latest Wordpress release
@@ -136,7 +139,7 @@ gulp.task('compileJavascripts', function() {
              .pipe(concat(fileName))
              .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(server, inject()));
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 /**
@@ -159,7 +162,7 @@ gulp.task('compileStylesheets', function() {
              .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulpif(config.production, minifyCSS()))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(server, inject()));
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 /**
@@ -171,7 +174,7 @@ gulp.task('compileTemplates', function() {
              .pipe(plumber())
              .pipe(jade({ locals: config.locals }))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(server, inject()));
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 /**
@@ -213,8 +216,6 @@ gulp.task('watch', function() {
  */
 
 gulp.task('live-reload', function() {
-  server = require('browser-sync').create();
-
   return server.init(config.server);
 });
 
