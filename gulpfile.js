@@ -8,7 +8,7 @@
 
 var fs = require('fs');
 var _ = require('lodash');
-var server = require('browser-sync').create();
+var server = false;
 
 var gulp = require('gulp');
 var download = require('gulp-download');
@@ -126,7 +126,7 @@ gulp.task('compileJavascripts', function() {
              .pipe(concat(fileName))
              .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(!config.production, server.stream()));
+             .pipe(gulpif(server, server.stream()));
 });
 
 /**
@@ -149,7 +149,7 @@ gulp.task('compileStylesheets', function() {
              .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulpif(config.production, minifyCSS()))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(!config.production, server.stream()));
+             .pipe(gulpif(server, server.stream()));
 });
 
 /**
@@ -203,6 +203,8 @@ gulp.task('watch', function() {
  */
 
 gulp.task('live-reload', function() {
+  server = require('browser-sync').create();
+
   return server.init(config.server);
 });
 
