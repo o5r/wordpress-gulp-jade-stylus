@@ -161,7 +161,7 @@ gulp.task('compileTemplates', function() {
              .pipe(plumber())
              .pipe(jade({ locals: config.locals }))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(!config.production, server.stream()));
+             .pipe(gulpif(server, server.stream()));
 });
 
 /**
