@@ -69,6 +69,16 @@ paths.misc = [
 ];
 
 /**
+ * Inject the new files to browser-sync
+ */
+
+var inject = function() {
+  if (server) {
+    return server.stream();
+  }
+};
+
+/**
  * Creates the `public` folder from unzipping the latest Wordpress release
  */
 
@@ -126,7 +136,7 @@ gulp.task('compileJavascripts', function() {
              .pipe(concat(fileName))
              .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(server, server.stream()));
+             .pipe(gulpif(server, inject()));
 });
 
 /**
@@ -149,7 +159,7 @@ gulp.task('compileStylesheets', function() {
              .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulpif(config.production, minifyCSS()))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(server, server.stream()));
+             .pipe(gulpif(server, inject()));
 });
 
 /**
@@ -161,7 +171,7 @@ gulp.task('compileTemplates', function() {
              .pipe(plumber())
              .pipe(jade({ locals: config.locals }))
              .pipe(gulp.dest(paths.destination))
-             .pipe(gulpif(server, server.stream()));
+             .pipe(gulpif(server, inject()));
 });
 
 /**
