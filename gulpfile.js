@@ -181,7 +181,7 @@ gulp.task('compileMisc', function() {
 gulp.task('compile', function() {
   var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileMisc'];
 
-  if (!hasFile(__dirname + '/public')) {
+  if (!hasFile(__dirname + '/public') && !config.production) {
     tasks.unshift('install');
   }
 
