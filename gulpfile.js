@@ -74,10 +74,6 @@ paths.misc = [
 
 gulp.task('install', ['download', 'unzip', 'rename', 'delete']);
 
-gulp.task('next', ['download'], function() {
-  console.log('nexto');
-});
-
 /**
  * Downloads the latest Wordpress release
  */
@@ -207,7 +203,6 @@ gulp.task('watch', function() {
  */
 
 gulp.task('live-reload', function() {
-  console.log(config.server);
   return server.init(config.server);
 });
 
