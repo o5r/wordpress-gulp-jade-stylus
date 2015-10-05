@@ -23,6 +23,8 @@ var plumber = require('gulp-plumber');
 var minifyCSS = require('gulp-minify-css');
 
 var nib = require('nib');
+var jeet = require('jeet');
+
 var del = require('del');
 
 var hasFile = fs.existsSync;
@@ -158,7 +160,7 @@ gulp.task('compileStylesheets', function() {
 
   return gulp.src(paths.stylesheets + '/style.styl')
              .pipe(plumber())
-             .pipe(stylus({ use: [nib()] }))
+             .pipe(stylus({ use: [nib(), jeet()] }))
              .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulpif(config.production, minifyCSS()))
              .pipe(gulp.dest(paths.destination))
