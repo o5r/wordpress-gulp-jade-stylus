@@ -28,7 +28,8 @@
     "gulp-wrap": "0.11.0",
     "lodash": "3.10.1",
     "nib": "1.1.0",
-    "yargs": "3.20.0"
+    "yargs": "3.20.0",
+    "jeet": "6.1.2"
   },
   "devDependencies": {
     "browser-sync": "2.8.2"
