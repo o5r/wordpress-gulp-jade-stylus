@@ -225,7 +225,7 @@ gulp.task('live-reload', function() {
  * Cleans everything by deleting newly created folders
  */
 
-gulp.task('clean', function(callback) {
+gulp.task('hard-clean', function(callback) {
   return del([
     __dirname + '/public',
     __dirname + '/wordpress',
