@@ -8,7 +8,8 @@ A sandbox for Wordpress theme development, using Jade + Stylus.
 + Then run `gulp` once to download the latest Wordpress release
 + Copy `themes/default-skeleton` into `themes/your-theme`
 + Edit `themes/your-theme/config.json` file as you wish (view more on the [Wordpress Codex](https://codex.wordpress.org/File_Header))
-+ Edit your theme name in the `config.json` root file
++ Edit your theme name in the `config.json` root file, here it would be `your-theme`
++ You need to have a PHP + MySQL server serving the files in the `public` folder. Mine would usually run on `http://local.wordpress.com`. Once you have that, you should edit `server.proxy` in your `config.json` file.
 + You're good to go ! Run `gulp` once again and go to `http://localhost:8080` to get started
 
 # Options
