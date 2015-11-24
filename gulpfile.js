@@ -40,7 +40,9 @@ var utils = require('./utils');
 var config = _.merge({
   latestWordpressURL: 'https://wordpress.org/latest.zip',
   production: false,
-  locals: {},
+  locals: {
+    version: Date.now()
+  },
   server: {
     logPrefix: 'Server',
     port: 8080,
