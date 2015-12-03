@@ -234,7 +234,8 @@ gulp.task('compilePOT', ['compileTemplates'], function() {
 gulp.task('compilePO', function() {
   return gulp.src(paths.languages)
              .pipe(gettext())
-             .pipe(gulp.dest(paths.destination + '/languages'));
+             .pipe(gulp.dest(paths.destination + '/languages'))
+             .pipe(gulpif(!config.production, server.stream()));
 });
 
 
