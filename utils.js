@@ -33,4 +33,4 @@ var parseConfigFile = function(json) {
 
 module.exports = {
   parseConfigFile: parseConfigFile
-}
+};

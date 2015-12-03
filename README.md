@@ -4,6 +4,7 @@ A sandbox for Wordpress theme development, using Jade + Stylus.
 # Features
 + Javascript optimization
 + Image compression
++ i18n native support
 
 # Getting started
 + You need [NodeJS](https://nodejs.org/) to use this
@@ -23,6 +24,11 @@ You can edit the options by either editing the root `config.json` file or using 
 **Type**: `string`
 
 **Description**: The Wordpress theme name you're working on. This should be identical to the theme directory name.
+
+### `text-domain`
+**Type**: `string`
+
+**Description**: The text domain you will use for internationalization. We use `theme` as a default, and we put everywhere it's needed.
 
 ### `production`
 **Type**: `boolean`
@@ -61,3 +67,16 @@ You can edit the options by either editing the root `config.json` file or using 
 **Default**: `https://wordpress.org/latest.zip`
 
 **Description**: The URL we use to fetch the latest Wordpress release (ZIP).
+
+# About i18n
+The Gulpfile automagically generates a POT file from your template files. It also puts the desired text domain everywhere it's needed.
+
+To translate strings, just use the following example:
+
+```jade
+div= __('Is this translated?', $text_domain);
+```
+
+A POT file will be generated into the `languages` folder in the theme. Copy this, rename it as [the language you want to translate](http://www.w3.org/International/articles/language-tags/) (for example `fr_FR.po`). Then, the file will be compiled into a MO file and will automatically be used depending on your `WPLANG` attribute.
+
+Read more about i18n on [the Wordpress Codex](https://developer.wordpress.org/themes/functionality/internationalization/).

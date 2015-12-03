@@ -22,6 +22,10 @@ var plumber = require('gulp-plumber');
 var minifyCSS = require('gulp-minify-css');
 var imagemin = require('gulp-imagemin');
 var cache = require('gulp-cached');
+var pot = require('gulp-wp-pot');
+var sort = require('gulp-sort');
+var replace = require('gulp-replace');
+var gettext = require('gulp-gettext');
 
 var nib = require('nib');
 var jeet = require('jeet');
@@ -52,6 +56,10 @@ var config = _.merge({
   }
 }, require('./config.json'), require('yargs').argv);
 
+if (_.isUndefined(config.domain) && !_.isUndefined(config.theme)) {
+  config.domain = _.kebabCase(config.theme);
+}
+
 /**
  * Configuring browser-sync
  * This is obviously ugly because we don't install browser-sync in production
@@ -75,15 +83,17 @@ var paths = {
   root: 'themes/' + config.theme,
   config: 'themes/' + config.theme + '/config.json',
   stylesheets: 'themes/' + config.theme + '/stylesheets',
+  languages: 'themes/' + config.theme + '/languages/*.po',
   javascripts: 'themes/' + config.theme + '/javascripts/**/*.js',
   templates: 'themes/' + config.theme + '/templates/**/*.jade',
   images: 'themes/' + config.theme + '/images/**/*',
+  functions: 'themes/' + config.theme + '/functions.php',
   destination: 'public/wp-content/themes/' + config.theme
 };
 
 paths.misc = [
-  '!' + paths.root + '/{templates,javascripts,stylesheets,images}/**/*',
-  '!' + paths.root + '/{templates,javascripts,stylesheets,images,config.json}',
+  '!' + paths.root + '/{templates,javascripts,stylesheets,languages,images}/**/*',
+  '!' + paths.root + '/{templates,javascripts,stylesheets,languages,images,config.json,functions.php}',
   paths.root + '/**/*'
 ];
 
@@ -159,7 +169,12 @@ gulp.task('compileStylesheets', function() {
   var themeMeta = false;
 
   if (hasFile(configPath)) {
-    themeMeta = utils.parseConfigFile(require(configPath));
+    var json = require(configPath);
+
+    if (_.isUndefined(json['text-domain'])) {
+      json['text-domain'] = config.domain;
+    }
+    themeMeta = utils.parseConfigFile(json);
   }
 
   return gulp.src(paths.stylesheets + '/style.styl')
@@ -184,7 +199,47 @@ gulp.task('compileTemplates', function() {
 });
 
 /**
- * Compiles Jade templates into theme directory
+ * Analyzes PHP files and generates a POT file
+ */
+
+gulp.task('compilePOT', ['compileTemplates'], function() {
+  var configPath = __dirname + '/' + paths.config;
+  var potConfig = {
+    domain: config.domain
+  };
+
+  if (hasFile(configPath)) {
+    var json = require(configPath);
+
+    if (!_.isUndefined(json['author-uri'])) {
+      potConfig.bugReport = json['author-uri'];
+    }
+    if (!_.isUndefined(json['author'])) {
+      potConfig.team = json['author'];
+    }
+  }
+
+  return gulp.src(paths.destination + '/**/*.php')
+             .pipe(sort())
+             .pipe(replace('$text_domain', '"' + config.domain + '"'))
+             .pipe(pot(potConfig))
+             .pipe(gulp.dest(paths.destination + '/languages'))
+             .pipe(gulp.dest(paths.root + '/languages'));
+});
+
+/**
+ * Compiles PO files into MO files
+ */
+
+gulp.task('compilePO', function() {
+  return gulp.src(paths.languages)
+             .pipe(gettext())
+             .pipe(gulp.dest(paths.destination + '/languages'));
+});
+
+
+/**
+ * Compress images into theme directory
  */
 
 gulp.task('compileImages', function() {
@@ -193,6 +248,19 @@ gulp.task('compileImages', function() {
              .pipe(cache('images'))
              .pipe(imagemin())
              .pipe(gulp.dest(paths.destination + '/images'))
+             .pipe(gulpif(!config.production, server.stream()));
+});
+
+/**
+ * Add the text domain into the functions.php file and automatically reloads the page when the functions.php changes
+ */
+
+gulp.task('compileFunctions', function() {
+  return gulp.src(paths.functions)
+             .pipe(plumber())
+             .pipe(replace('$text_domain', '"' + config.domain + '"'))
+             .pipe(wrap('<?php $text_domain = "' + config.domain + '"; ?><%= contents %>'))
+             .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
 
@@ -211,7 +279,7 @@ gulp.task('compileMisc', function() {
  */
 
 gulp.task('compile', function() {
-  var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileImages', 'compileMisc'];
+  var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileImages', 'compileFunctions', 'compilePOT', 'compilePO', 'compileMisc'];
 
   if (!hasFile(__dirname + '/public') && !config.production) {
     tasks.unshift('install');
@@ -226,9 +294,11 @@ gulp.task('compile', function() {
 
 gulp.task('watch', function() {
   gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], ['compileStylesheets']);
-  gulp.watch([paths.templates], ['compileTemplates']);
+  gulp.watch([paths.templates], ['compileTemplates', 'compilePOT']);
   gulp.watch([paths.javascripts], ['compileJavascripts']);
   gulp.watch([paths.images], ['compileImages']);
+  gulp.watch([paths.functions], ['compileFunctions']);
+  gulp.watch([paths.languages], ['compilePO']);
 });
 
 /**
