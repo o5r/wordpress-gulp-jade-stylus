@@ -3,7 +3,6 @@
  *
  * TODO:
  * + Install Wordpress only if it hasn't been installed yet
- * + Add an images folder and compress before copying using gulp-imagemin
  */
 
 var fs = require('fs');
@@ -21,6 +20,8 @@ var uglify = require('gulp-uglify');
 var order = require('gulp-order');
 var plumber = require('gulp-plumber');
 var minifyCSS = require('gulp-minify-css');
+var imagemin = require('gulp-imagemin');
+var cache = require('gulp-cached');
 
 var nib = require('nib');
 var jeet = require('jeet');
@@ -76,12 +77,13 @@ var paths = {
   stylesheets: 'themes/' + config.theme + '/stylesheets',
   javascripts: 'themes/' + config.theme + '/javascripts/**/*.js',
   templates: 'themes/' + config.theme + '/templates/**/*.jade',
+  images: 'themes/' + config.theme + '/images/**/*',
   destination: 'public/wp-content/themes/' + config.theme
 };
 
 paths.misc = [
-  '!' + paths.root + '/{templates,javascripts,stylesheets}/**/*',
-  '!' + paths.root + '/{templates,javascripts,stylesheets,config.json}',
+  '!' + paths.root + '/{templates,javascripts,stylesheets,images}/**/*',
+  '!' + paths.root + '/{templates,javascripts,stylesheets,images,config.json}',
   paths.root + '/**/*'
 ];
 
@@ -182,6 +184,19 @@ gulp.task('compileTemplates', function() {
 });
 
 /**
+ * Compiles Jade templates into theme directory
+ */
+
+gulp.task('compileImages', function() {
+  return gulp.src(paths.images)
+             .pipe(plumber())
+             .pipe(cache('images'))
+             .pipe(imagemin())
+             .pipe(gulp.dest(paths.destination + '/images'))
+             .pipe(gulpif(!config.production, server.stream()));
+});
+
+/**
  * Copy all the files in themes that are not in the
  * templates/javascripts/stylesheets folders or the config.json file
  */
@@ -196,7 +211,7 @@ gulp.task('compileMisc', function() {
  */
 
 gulp.task('compile', function() {
-  var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileMisc'];
+  var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileImages', 'compileMisc'];
 
   if (!hasFile(__dirname + '/public') && !config.production) {
     tasks.unshift('install');
@@ -213,6 +228,7 @@ gulp.task('watch', function() {
   gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], ['compileStylesheets']);
   gulp.watch([paths.templates], ['compileTemplates']);
   gulp.watch([paths.javascripts], ['compileJavascripts']);
+  gulp.watch([paths.images], ['compileImages']);
 });
 
 /**

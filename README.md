@@ -1,6 +1,10 @@
 # Wordpress + Jade + Stylus
 A sandbox for Wordpress theme development, using Jade + Stylus.
 
+# Features
++ Javascript optimization
++ Image compression
+
 # Getting started
 + You need [NodeJS](https://nodejs.org/) to use this
 + Clone this repository by running `git clone https://github.com/bnetter/wordpress-gulp-jade-stylus.git wordpress-sandbox` (`wordpress-sandbox` is the folder name you're cloning to)
