@@ -260,7 +260,7 @@ gulp.task('compileFunctions', function() {
   return gulp.src(paths.functions)
              .pipe(plumber())
              .pipe(replace('$text_domain', '"' + config.domain + '"'))
-             .pipe(wrap('<?php $text_domain = "' + config.domain + '"; ?><%= contents %>'))
+             .pipe(wrap('<?php global $text_domain; $text_domain = "' + config.domain + '"; ?><%= contents %>'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
