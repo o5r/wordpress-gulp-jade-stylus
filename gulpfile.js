@@ -53,7 +53,8 @@ var config = _.merge({
     port: 8080,
     open: false,
     notify: false
-  }
+  },
+  rename: false // rename the theme name
 }, require('./config.json'), require('yargs').argv);
 
 if (_.isUndefined(config.domain) && !_.isUndefined(config.theme)) {
@@ -174,14 +175,17 @@ gulp.task('compileStylesheets', function() {
     if (_.isUndefined(json['text-domain'])) {
       json['text-domain'] = config.domain;
     }
+    if (config.rename) {
+      json['theme-name'] = config.rename;
+    }
     themeMeta = utils.parseConfigFile(json);
   }
 
   return gulp.src(paths.stylesheets + '/style.styl')
              .pipe(plumber())
              .pipe(stylus({ use: [nib(), jeet()] }))
-             .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulpif(config.production, minifyCSS()))
+             .pipe(gulpif(!!themeMeta, wrap({ src: __dirname + '/css-template.txt'}, { meta: themeMeta })))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
