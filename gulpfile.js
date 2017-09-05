@@ -175,8 +175,11 @@ gulp.task('compileStylesheets', function() {
     if (_.isUndefined(json['text-domain'])) {
       json['text-domain'] = config.domain;
     }
-    if (config.rename) {
-      json['theme-name'] = config.rename;
+    if (_.isUndefined(json['template'])) {
+      json['template'] = config.domain;
+    }
+    if (!_.isUndefined(config.headers)) {
+      _.merge(json, config.headers);
     }
     themeMeta = utils.parseConfigFile(json);
   }
