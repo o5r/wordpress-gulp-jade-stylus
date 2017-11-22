@@ -175,9 +175,6 @@ gulp.task('compileStylesheets', function() {
     if (_.isUndefined(json['text-domain'])) {
       json['text-domain'] = config.domain;
     }
-    if (_.isUndefined(json['template'])) {
-      json['template'] = config.domain;
-    }
     if (!_.isUndefined(config.headers)) {
       _.merge(json, config.headers);
     }
