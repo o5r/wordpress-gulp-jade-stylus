@@ -1,6 +1,6 @@
 {
   "name": "wordpress-gulp-jade-stylus",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A skeleton app for Wordpress with Jade + Stylus support",
   "repository": {
     "type": "git",
