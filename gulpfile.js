@@ -49,9 +49,6 @@ var config = _.merge({
     version: Date.now()
   },
   server: {
-    logPrefix: 'Server',
-    port: 8080,
-    open: false,
     notify: false
   },
   rename: false // rename the theme name
@@ -59,6 +56,7 @@ var config = _.merge({
 
 if (_.isUndefined(config.domain) && !_.isUndefined(config.theme)) {
   config.domain = _.kebabCase(config.theme);
+  config.server.logPrefix = config.theme;
 }
 
 /**
