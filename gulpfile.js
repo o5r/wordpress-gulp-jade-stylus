@@ -26,6 +26,7 @@ var pot = require('gulp-wp-pot');
 var sort = require('gulp-sort');
 var replace = require('gulp-replace');
 var gettext = require('gulp-gettext');
+var sourcemaps = require('gulp-sourcemaps');
 
 var nib = require('nib');
 var jeet = require('jeet');
@@ -151,8 +152,10 @@ gulp.task('compileJavascripts', function() {
   return gulp.src(paths.javascripts)
              .pipe(plumber())
              .pipe(order([ 'jquery.js' ]))
-             .pipe(concat(fileName))
-             .pipe(gulpif(config.production, uglify({compress: false})))
+             .pipe(sourcemaps.init())
+               .pipe(concat(fileName))
+               .pipe(gulpif(config.production, uglify({compress: false})))
+             .pipe(sourcemaps.write('./'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
