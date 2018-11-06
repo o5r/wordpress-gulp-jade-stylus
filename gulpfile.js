@@ -152,7 +152,7 @@ gulp.task('compileJavascripts', function() {
   return gulp.src(paths.javascripts)
              .pipe(plumber())
              .pipe(order([ 'jquery.js' ]))
-             .pipe(sourcemaps.init())
+             .pipe(sourcemaps.init({loadMaps: true}))
                .pipe(concat(fileName))
                .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(sourcemaps.write('./'))
