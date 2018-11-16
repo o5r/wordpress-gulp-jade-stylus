@@ -50,6 +50,7 @@ var config = _.merge({
     version: Date.now()
   },
   server: {
+    open: false,
     notify: false
   },
   rename: false // rename the theme name
