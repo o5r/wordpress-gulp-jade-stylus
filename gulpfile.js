@@ -9,6 +9,7 @@ var fs = require('fs');
 var _ = require('lodash');
 
 var gulp = require('gulp');
+var babel = require('gulp-babel');
 var download = require('gulp-download');
 var unzip = require('gulp-unzip');
 var jade = require('gulp-jade-php');
@@ -27,6 +28,7 @@ var sort = require('gulp-sort');
 var replace = require('gulp-replace');
 var gettext = require('gulp-gettext');
 var sourcemaps = require('gulp-sourcemaps');
+var remember = require('gulp-remember');
 
 var nib = require('nib');
 var jeet = require('jeet');
@@ -153,10 +155,15 @@ gulp.task('compileJavascripts', function() {
   return gulp.src(paths.javascripts)
              .pipe(plumber())
              .pipe(order([ 'jquery.js' ]))
+             .pipe(cache('core'))
              .pipe(sourcemaps.init({loadMaps: true}))
+               .pipe(babel({
+                 presets: [['env', { targets: { ie: 9 } }]]
+               }))
                .pipe(concat(fileName))
                .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(sourcemaps.write('./'))
+             .pipe(remember('core'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
