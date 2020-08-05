@@ -290,20 +290,20 @@ gulp.task('compile', gulp.series(
  * Watch all the assets
  */
 gulp.task('watchers', function() {
-    gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], gulp.series('compileStylesheets'));
-    gulp.watch([paths.templates], gulp.series('compileTemplates', 'compilePOT'));
-    gulp.watch([paths.javascripts], gulp.series('compileJavascripts'));
-    gulp.watch([paths.images], gulp.series('compileImages'));
-    gulp.watch([paths.root + '/functions/**/*.php'], gulp.series('compileFunctions'));
-    gulp.watch([paths.functions], gulp.series('compilePOT'));
-    gulp.watch([paths.languages], gulp.series('compilePO'));
+  gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], gulp.series('compileStylesheets'));
+  gulp.watch([paths.templates], gulp.series('compileTemplates', 'compilePOT'));
+  gulp.watch([paths.javascripts], gulp.series('compileJavascripts'));
+  gulp.watch([paths.images], gulp.series('compileImages'));
+  gulp.watch([paths.root + '/functions/**/*.php'], gulp.series('compileFunctions'));
+  gulp.watch([paths.functions], gulp.series('compilePOT'));
+  gulp.watch([paths.languages], gulp.series('compilePO'));
 });
 
 /**
  * Starts the live-reloaded web server
  */
 gulp.task('live-reload', function(done) {
-  if (!config.server && !_.isUndefined(config.server.proxy)) {
+  if (config.server && !_.isUndefined(config.server.proxy)) {
     server.init(config.server);
   }
   done();
