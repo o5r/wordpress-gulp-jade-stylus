@@ -290,7 +290,6 @@ gulp.task('compile', gulp.series(
  * Watch all the assets
  */
 gulp.task('watchers', function() {
-  if (!config.production) {
     gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], gulp.series('compileStylesheets'));
     gulp.watch([paths.templates], gulp.series('compileTemplates', 'compilePOT'));
     gulp.watch([paths.javascripts], gulp.series('compileJavascripts'));
@@ -298,7 +297,6 @@ gulp.task('watchers', function() {
     gulp.watch([paths.root + '/functions/**/*.php'], gulp.series('compileFunctions'));
     gulp.watch([paths.functions], gulp.series('compilePOT'));
     gulp.watch([paths.languages], gulp.series('compilePO'));
-  }
 });
 
 /**
@@ -327,9 +325,11 @@ gulp.task('hard-clean', function(callback) {
  */
 gulp.task('launch', gulp.series(function loadTasks(done){
   if (!hasFile(__dirname + '/public') && !config.production) {
-     gulp.series('download', 'unzip', 'rename', 'delete', 'compile', 'live-reload', 'watchers')();
-  } else{
+     gulp.series('download', 'unzip', 'rename', 'delete', 'compile')();
+  } else if (!config.production) {
     gulp.series('compile', 'live-reload', 'watchers')();
+  } else{
+    gulp.series('compile')();
   }
   done();
 }));
