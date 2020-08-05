@@ -142,13 +142,19 @@ gulp.task('delete', function(callback) {
  */
 gulp.task('compileJavascripts', function() {
   const fileName = 'core.js';
+
   return gulp.src(paths.javascripts)
              .pipe(plumber())
              .pipe(order([ 'jquery.js' ]))
+             .pipe(cache('core'))
              .pipe(sourcemaps.init({loadMaps: true}))
-             .pipe(concat(fileName))
-             .pipe(gulpif(config.production, uglify({compress: false})))
+               .pipe(babel({
+                 presets: [['env', { targets: { ie: 9 } }]]
+               }))
+               .pipe(concat(fileName))
+               .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(sourcemaps.write('./'))
+             .pipe(remember('core'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
