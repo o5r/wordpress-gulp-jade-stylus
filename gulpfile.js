@@ -8,6 +8,7 @@ const fs = require('fs');
 const _ = require('lodash');
 
 const gulp = require('gulp');
+const babel = require('gulp-babel');
 const download = require('gulp-download');
 const unzip = require('gulp-unzip');
 const jade = require('gulp-jade-php');
@@ -26,6 +27,7 @@ const sort = require('gulp-sort');
 const replace = require('gulp-replace');
 const gettext = require('gulp-gettext');
 const sourcemaps = require('gulp-sourcemaps');
+const remember = require('gulp-remember');
 
 const nib = require('nib');
 const jeet = require('jeet');
