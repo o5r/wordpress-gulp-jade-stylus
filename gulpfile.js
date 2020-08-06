@@ -151,7 +151,8 @@ gulp.task('compileJavascripts', function() {
              .pipe(cache('core'))
              .pipe(sourcemaps.init({loadMaps: true}))
                .pipe(babel({
-                 presets: [['env', { targets: { ie: 9 } }]]
+                 presets: [['env', { targets: { ie: 9 } }]],
+                 plugins: ['transform-remove-strict-mode']
                }))
                .pipe(concat(fileName))
                .pipe(gulpif(config.production, uglify({compress: false})))
