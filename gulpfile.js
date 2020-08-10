@@ -154,10 +154,10 @@ gulp.task('compileJavascripts', function() {
                  presets: [['env', { targets: { ie: 9 } }]],
                  plugins: ['transform-remove-strict-mode']
                }))
+               .pipe(remember('core'))
                .pipe(concat(fileName))
                .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(sourcemaps.write('./'))
-             .pipe(remember('core'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
