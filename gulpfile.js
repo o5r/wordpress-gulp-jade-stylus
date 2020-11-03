@@ -1,42 +1,41 @@
-/**
- * This Gulp script generates Wordpress themes using Jade + Stylus
- *
- * TODO:
- * + Install Wordpress only if it hasn't been installed yet
- */
+/** 
+ * This Gulp script generates Wordpress themes using Jade + Stylus 
+ * + support gulp 4.0.2, node 12.13.0 LTS
+ * + Install Wordpress only if it hasn't been installed yet 
+ */ 
 
-var fs = require('fs');
-var _ = require('lodash');
+const fs = require('fs');
+const _ = require('lodash');
 
-var gulp = require('gulp');
-var babel = require('gulp-babel');
-var download = require('gulp-download');
-var unzip = require('gulp-unzip');
-var jade = require('gulp-jade-php');
-var concat = require('gulp-concat');
-var wrap = require('gulp-wrap');
-var gulpif = require('gulp-if');
-var stylus = require('gulp-stylus');
-var uglify = require('gulp-uglify');
-var order = require('gulp-order');
-var plumber = require('gulp-plumber');
-var minifyCSS = require('gulp-clean-css');
-var imagemin = require('gulp-imagemin');
-var cache = require('gulp-cached');
-var pot = require('gulp-wp-pot');
-var sort = require('gulp-sort');
-var replace = require('gulp-replace');
-var gettext = require('gulp-gettext');
-var sourcemaps = require('gulp-sourcemaps');
-var remember = require('gulp-remember');
+const gulp = require('gulp');
+const babel = require('gulp-babel');
+const download = require('gulp-download');
+const unzip = require('gulp-unzip');
+const jade = require('gulp-jade-php');
+const concat = require('gulp-concat');
+const wrap = require('gulp-wrap');
+const gulpif = require('gulp-if');
+const stylus = require('gulp-stylus');
+const uglify = require('gulp-uglify');
+const order = require('gulp-order');
+const plumber = require('gulp-plumber');
+const minifyCSS = require('gulp-clean-css');
+const imagemin = require('gulp-imagemin');
+const cache = require('gulp-cached');
+const pot = require('gulp-wp-pot');
+const sort = require('gulp-sort');
+const replace = require('gulp-replace');
+const gettext = require('gulp-gettext');
+const sourcemaps = require('gulp-sourcemaps');
+const remember = require('gulp-remember');
 
-var nib = require('nib');
-var jeet = require('jeet');
+const nib = require('nib');
+const jeet = require('jeet');
 
-var del = require('del');
+const del = require('del');
 
-var hasFile = fs.existsSync;
-var utils = require('./utils');
+const hasFile = fs.existsSync;
+const utils = require('./utils');
 
 /**
  * Configuration object, following this priority:
@@ -44,19 +43,21 @@ var utils = require('./utils');
  * 2°) the config.json file at the root
  * 3°) the arguments
  */
-
-var config = _.merge({
+const config = _.merge({
   latestWordpressURL: 'https://wordpress.org/latest.zip',
   production: false,
   locals: {
     version: Date.now()
-  },
+    },
   server: {
     open: false,
     notify: false
-  },
+    },
   rename: false // rename the theme name
-}, require('./config.json'), require('yargs').argv);
+  },
+  require('./config.json'),
+  require('yargs').argv
+);
 
 if (_.isUndefined(config.domain) && !_.isUndefined(config.theme)) {
   config.domain = _.kebabCase(config.theme);
@@ -67,22 +68,21 @@ if (_.isUndefined(config.domain) && !_.isUndefined(config.theme)) {
  * Configuring browser-sync
  * This is obviously ugly because we don't install browser-sync in production
  */
-
+let server;
 if (config.production) {
-  var server = {
+  server = {
     stream: function() {
       return true;
     }
   };
 } else {
-  var server = require('browser-sync').create();
+  server = require('browser-sync').create();
 }
 
 /**
  * The assets paths
  */
-
-var paths = {
+const paths = {
   root: 'themes/' + config.theme,
   config: 'themes/' + config.theme + '/config.json',
   stylesheets: 'themes/' + config.theme + '/stylesheets',
@@ -91,25 +91,21 @@ var paths = {
   templates: 'themes/' + config.theme + '/templates/**/*.jade',
   images: 'themes/' + config.theme + '/images/**/*',
   functions: 'themes/' + config.theme + '/functions.php',
-  destination: 'public/wp-content/themes/' + config.theme
+  destination: 'public/wp-content/themes/' + config.theme,
+  misc: [
+    'themes/' + config.theme + '/**/*',
+    '!themes/' + config.theme + '/{templates,javascripts,stylesheets,languages,images}/**/*',
+    '!themes/' + config.theme + '/{templates,javascripts,stylesheets,languages,images,config.json,functions.php}'
+  ]
 };
-
-paths.misc = [
-  '!' + paths.root + '/{templates,javascripts,stylesheets,languages,images}/**/*',
-  '!' + paths.root + '/{templates,javascripts,stylesheets,languages,images,config.json,functions.php}',
-  paths.root + '/**/*'
-];
 
 /**
  * Creates the `public` folder from unzipping the latest Wordpress release
  */
 
-gulp.task('install', ['download', 'unzip', 'rename', 'delete']);
-
 /**
  * Downloads the latest Wordpress release
  */
-
 gulp.task('download', function() {
   return download(config.latestWordpressURL).pipe(gulp.dest(__dirname + '/tmp'));
 });
@@ -117,8 +113,7 @@ gulp.task('download', function() {
 /**
  * Unzips the latest release to the current directory
  */
-
-gulp.task('unzip', ['download'], function() {
+gulp.task('unzip', function() {
   return gulp.src(__dirname + '/tmp/latest.zip')
              .pipe(unzip())
              .pipe(gulp.dest(__dirname));
@@ -127,8 +122,7 @@ gulp.task('unzip', ['download'], function() {
 /**
  * Copies all the files in the `wordpress` folder to a `public` folder
  */
-
-gulp.task('rename', ['unzip'], function() {
+gulp.task('rename', function() {
   return gulp.src(__dirname + '/wordpress/**/*')
              .pipe(gulp.dest(__dirname + '/public'));
 });
@@ -136,21 +130,20 @@ gulp.task('rename', ['unzip'], function() {
 /**
  * Deletes the previously created `wordpress` folder
  */
-
-gulp.task('delete', ['rename'], function(callback) {
+gulp.task('delete', function(callback) {
   return del([
     __dirname + '/wordpress',
     __dirname + '/tmp'
   ], callback);
 });
 
+
 /**
  * Compiles all the javascripts files into a core.js file
  * If we're running this in production, minifies the file
  */
-
 gulp.task('compileJavascripts', function() {
-  var fileName = 'core.js';
+  const fileName = 'core.js';
 
   return gulp.src(paths.javascripts)
              .pipe(plumber())
@@ -161,10 +154,10 @@ gulp.task('compileJavascripts', function() {
                  presets: [['env', { targets: { ie: 9 } }]],
                  plugins: ['transform-remove-strict-mode']
                }))
+               .pipe(remember('core'))
                .pipe(concat(fileName))
                .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(sourcemaps.write('./'))
-             .pipe(remember('core'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
 });
@@ -174,13 +167,12 @@ gulp.task('compileJavascripts', function() {
  * Also appends the config.json file at the top of the style.css, based on the
  * css-template.txt file
  */
-
 gulp.task('compileStylesheets', function() {
-  var configPath = __dirname + '/' + paths.config;
-  var themeMeta = false;
+  const configPath = __dirname + '/' + paths.config;
+  let themeMeta = false;
 
   if (hasFile(configPath)) {
-    var json = require(configPath);
+    const json = require(configPath);
 
     if (_.isUndefined(json['text-domain'])) {
       json['text-domain'] = config.domain;
@@ -203,7 +195,6 @@ gulp.task('compileStylesheets', function() {
 /**
  * Compiles Jade templates into theme directory
  */
-
 gulp.task('compileTemplates', function() {
   return gulp.src(paths.templates)
              .pipe(plumber())
@@ -215,15 +206,14 @@ gulp.task('compileTemplates', function() {
 /**
  * Analyzes PHP files and generates a POT file
  */
-
-gulp.task('compilePOT', ['compileTemplates'], function() {
-  var configPath = __dirname + '/' + paths.config;
-  var potConfig = {
-    domain: config.domain
+gulp.task('compilePOT', function() {
+  const configPath = __dirname + '/' + paths.config;
+  const potConfig = {
+    domain: '$text_domain'
   };
 
   if (hasFile(configPath)) {
-    var json = require(configPath);
+    const json = require(configPath);
 
     if (!_.isUndefined(json['author-uri'])) {
       potConfig.bugReport = json['author-uri'];
@@ -234,17 +224,14 @@ gulp.task('compilePOT', ['compileTemplates'], function() {
   }
 
   return gulp.src(paths.destination + '/**/*.php')
-             .pipe(sort())
-             .pipe(replace('$text_domain', '"' + config.domain + '"'))
              .pipe(pot(potConfig))
-             .pipe(gulp.dest(paths.destination + '/languages'))
-             .pipe(gulp.dest(paths.root + '/languages'));
+             .pipe(gulp.dest(paths.destination + '/languages/' + config.domain + '.pot'))
+             .pipe(gulp.dest(paths.root + '/languages/' + config.domain + '.pot'));
 });
 
 /**
  * Compiles PO files into MO files
  */
-
 gulp.task('compilePO', function() {
   return gulp.src(paths.languages)
              .pipe(gettext())
@@ -256,7 +243,6 @@ gulp.task('compilePO', function() {
 /**
  * Compress images into theme directory
  */
-
 gulp.task('compileImages', function() {
   return gulp.src(paths.images)
              .pipe(plumber())
@@ -269,7 +255,6 @@ gulp.task('compileImages', function() {
 /**
  * Add the text domain into the functions.php file and automatically reloads the page when the functions.php changes
  */
-
 gulp.task('compileFunctions', function() {
   return gulp.src(paths.functions)
              .pipe(plumber())
@@ -283,7 +268,6 @@ gulp.task('compileFunctions', function() {
  * Copy all the files in themes that are not in the
  * templates/javascripts/stylesheets folders or the config.json file
  */
-
 gulp.task('compileMisc', function() {
   return gulp.src(paths.misc)
              .pipe(gulp.dest(paths.destination));
@@ -292,44 +276,45 @@ gulp.task('compileMisc', function() {
 /**
  * Compiles all the assets
  */
-
-gulp.task('compile', function() {
-  var tasks = ['compileTemplates', 'compileStylesheets', 'compileJavascripts', 'compileImages', 'compileFunctions', 'compilePOT', 'compilePO', 'compileMisc'];
-
-  if (!hasFile(__dirname + '/public') && !config.production) {
-    tasks.unshift('install');
-  }
-
-  return gulp.start(tasks);
-});
+gulp.task('compile', gulp.series(
+  'compileTemplates',
+  'compileStylesheets',
+  'compileJavascripts',
+  'compileImages',
+  'compileFunctions',
+  'compilePOT',
+  'compilePO',
+  'compileMisc'
+));
 
 /**
  * Watch all the assets
  */
-
-gulp.task('watch', function() {
-  gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], ['compileStylesheets']);
-  gulp.watch([paths.templates], ['compileTemplates', 'compilePOT']);
-  gulp.watch([paths.javascripts], ['compileJavascripts']);
-  gulp.watch([paths.images], ['compileImages']);
-  gulp.watch([paths.functions], ['compileFunctions']);
-  gulp.watch([paths.languages], ['compilePO']);
+gulp.task('watchers', function() {
+  gulp.watch([paths.stylesheets + '/**/*.styl', paths.config], gulp.series('compileStylesheets'));
+  gulp.watch([paths.templates], gulp.series('compileTemplates', 'compilePOT'));
+  gulp.watch([paths.javascripts], gulp.series('compileJavascripts'));
+  gulp.watch([paths.images], gulp.series('compileImages'));
+  gulp.watch([paths.root + '/functions/**/*.php'], gulp.series('compileFunctions'));
+  gulp.watch([paths.functions], gulp.series('compilePOT'));
+  gulp.watch([paths.languages], gulp.series('compilePO'));
 });
 
 /**
  * Starts the live-reloaded web server
  */
-
-gulp.task('live-reload', function() {
-  return server.init(config.server);
+gulp.task('live-reload', function(done) {
+  if (config.server && !_.isUndefined(config.server.proxy)) {
+    server.init(config.server);
+  }
+  done();
 });
 
 /**
  * Cleans everything by deleting newly created folders
  */
-
 gulp.task('hard-clean', function(callback) {
-  return del([
+  del([
     __dirname + '/public',
     __dirname + '/wordpress',
     __dirname + '/tmp'
@@ -339,12 +324,15 @@ gulp.task('hard-clean', function(callback) {
 /**
  * Compiles then watch assets if not in production
  */
-
-gulp.task('default', ['compile'], function() {
-  if (!config.production) {
-    gulp.start('watch');
-    if (!!config.server && !_.isUndefined(config.server.proxy)) {
-      gulp.start('live-reload');
-    }
+gulp.task('launch', gulp.series(function loadTasks(done){
+  if (!hasFile(__dirname + '/public') && !config.production) {
+     gulp.series('download', 'unzip', 'rename', 'delete', 'compile')();
+  } else if (!config.production) {
+    gulp.series('compile', 'live-reload', 'watchers')();
+  } else{
+    gulp.series('compile')();
   }
-});
+  done();
+}));
+
+gulp.task('default', gulp.series('launch'));
