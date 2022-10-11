@@ -150,13 +150,13 @@ gulp.task('compileJavascripts', function() {
              .pipe(order([ 'jquery.js' ]))
              .pipe(cache('core'))
              .pipe(sourcemaps.init({loadMaps: true}))
-               .pipe(babel({
-                 presets: [['env', { targets: { ie: 9 } }]],
-                 plugins: ['transform-remove-strict-mode']
-               }))
-               .pipe(remember('core'))
-               .pipe(concat(fileName))
-               .pipe(gulpif(config.production, uglify({compress: false})))
+             .pipe(babel({
+                presets: [['@babel/preset-env', { targets: { ie: 9 } }]],
+                plugins: ['transform-remove-strict-mode', '@babel/transform-runtime']
+              }))
+             .pipe(remember('core'))
+             .pipe(concat(fileName))
+             .pipe(gulpif(config.production, uglify({compress: false})))
              .pipe(sourcemaps.write('./'))
              .pipe(gulp.dest(paths.destination))
              .pipe(gulpif(!config.production, server.stream()));
